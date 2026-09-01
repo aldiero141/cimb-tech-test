@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:callmonitoring
+    username: supervisor
+    password: supervisor123
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format-sql: true
+  sql:
+    init:
+      mode: never
+  profiles:
+    active: docker
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+server:
+  port: 8080

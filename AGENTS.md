@@ -81,18 +81,18 @@ Every branch name MUST be either a trunk branch or a prefixed branch matching
 
 **Allowed `type` prefixes**
 
-| Type | Alias | Use for | Example |
-|---|---|---|---|
-| `feature` | `feat` | new feature | `feature/add-login-page` |
-| `bugfix` | `fix` | bug fix | `fix/header-bug` |
-| `hotfix` | — | urgent production fix | `hotfix/security-patch` |
-| `release` | — | release preparation | `release/v1.2.0` |
-| `chore` | — | non-code tasks (deps, docs, infra) | `chore/update-dependencies` |
-| `ai` | — | any AI agent (generic) | `ai/refactor-auth-flow` |
-| `claude` | — | Claude Code (Anthropic) | `claude/security-patch` |
-| `codex` | — | OpenAI Codex | `codex/optimize-query` |
-| `copilot` | — | GitHub Copilot | `copilot/add-login-page` |
-| `cursor` | — | Cursor | `cursor/fix-header-bug` |
+| Type | Use for | Example |
+|---|---|---|
+| `feature` / `feat` | new feature | `feature/add-login-page` |
+| `bugfix` / `fix` | bug fix | `fix/header-bug` |
+| `hotfix` | urgent production fix | `hotfix/security-patch` |
+| `release` | release preparation | `release/v1.2.0` |
+| `chore` | non-code tasks (deps, docs, infra) | `chore/update-dependencies` |
+| `ai` | any AI agent (generic) | `ai/refactor-auth-flow` |
+| `claude` | Claude Code (Anthropic) | `claude/security-patch` |
+| `codex` | OpenAI Codex | `codex/optimize-query` |
+| `copilot` | GitHub Copilot | `copilot/add-login-page` |
+| `cursor` | Cursor | `cursor/fix-header-bug` |
 
 Trunk branches (`main`, `master`, `develop`) do not use a prefix. Custom types
 beyond this list are allowed but MUST be documented here before use.

@@ -69,14 +69,15 @@ Notes on this repo's index:
 ## 2. Branching
 
 - Every new feature (a user story, ticket, or otherwise scoped unit of
-  work) gets its own branch off `main` before any code is written.
+  work) gets its own branch off `master` (the repo's default branch) before
+  any code is written.
 - Naming: `feature/<short-slug>` (e.g. `feature/call-monitoring-table`),
   or `feature/<TICKET-ID>-<short-slug>` when a ticket ID exists
   (e.g. `feature/THT-MON-US-001-call-table`).
 - Bug fixes outside a feature branch use `fix/<short-slug>`; infra-only
   work may use `chore/<short-slug>`.
-- Do not commit feature work directly to `main`. Merge (or open a PR
-  against) `main` only once the feature's definition of done (§6) is met.
+- Do not commit feature work directly to `master`. Merge (or open a PR
+  against) `master` only once the feature's definition of done (§6) is met.
 - One feature branch may span multiple agents (backend + frontend +
   devops) when the feature touches all three layers — coordinate on the
   same branch rather than each agent branching independently.

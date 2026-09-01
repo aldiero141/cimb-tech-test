@@ -66,16 +66,55 @@ Notes on this repo's index:
   `main.js` — do not add a `vite-plugin-primevue` dependency, it does not
   exist.
 
-## 2. Branching
+## 2. Branching — Conventional Branch 1.1.0
+
+This repo follows [Conventional Branch 1.1.0](https://conventionalbranch.org/).
+Every branch name MUST be either a trunk branch or a prefixed branch matching
+`<type>/<description>`.
 
 - Every new feature (a user story, ticket, or otherwise scoped unit of
-  work) gets its own branch off `master` (the repo's default branch) before
-  any code is written.
-- Naming: `feature/<short-slug>` (e.g. `feature/call-monitoring-table`),
-  or `feature/<TICKET-ID>-<short-slug>` when a ticket ID exists
-  (e.g. `feature/THT-MON-US-001-call-table`).
-- Bug fixes outside a feature branch use `fix/<short-slug>`; infra-only
-  work may use `chore/<short-slug>`.
+  work) gets its own branch off `master` (the repo's default branch — the
+  trunk branch for this repo, alongside `main`/`develop` per the spec)
+  before any code is written.
+
+**Format:** `<type>/<description>`
+
+**Allowed `type` prefixes**
+
+| Type | Alias | Use for | Example |
+|---|---|---|---|
+| `feature` | `feat` | new feature | `feature/add-login-page` |
+| `bugfix` | `fix` | bug fix | `fix/header-bug` |
+| `hotfix` | — | urgent production fix | `hotfix/security-patch` |
+| `release` | — | release preparation | `release/v1.2.0` |
+| `chore` | — | non-code tasks (deps, docs, infra) | `chore/update-dependencies` |
+| `ai` | — | any AI agent (generic) | `ai/refactor-auth-flow` |
+| `claude` | — | Claude Code (Anthropic) | `claude/security-patch` |
+| `codex` | — | OpenAI Codex | `codex/optimize-query` |
+| `copilot` | — | GitHub Copilot | `copilot/add-login-page` |
+| `cursor` | — | Cursor | `cursor/fix-header-bug` |
+
+Trunk branches (`main`, `master`, `develop`) do not use a prefix. Custom types
+beyond this list are allowed but MUST be documented here before use.
+
+**Branch naming rules** (per spec):
+
+1. Use only lowercase alphanumerics (`a-z`, `0-9`), hyphens (`-`), and dots (`.`
+   for version numbers in `release/` branches, e.g. `release/v1.2.0`).
+2. No consecutive, leading, or trailing hyphens or dots — e.g. `feature/new--login`,
+   `feature/-new-login`, `feature/new-login-`, `release/v1.-2.0` are all invalid.
+3. No spaces or underscores — `fix/header bug` and `fix/header_bug` are invalid.
+4. Keep it clear and concise — descriptive yet short.
+5. Include ticket/issue number in lowercase when one exists —
+   e.g. `feature/issue-123-new-login`, `feature/tht-mon-us-001-call-table`
+   (lowercase the ticket ID; `feature/THT-MON-US-001-call-table` is invalid).
+
+Formal ABNF (spec): `branch-name = trunk-branch / prefixed-branch` where
+`prefixed-branch = type "/" description`, `description = desc-segment *("-" desc-segment)`,
+`desc-segment = 1*(ALPHA / DIGIT) *("." 1*(ALPHA / DIGIT))`.
+
+**Repo workflow rules**
+
 - Do not commit feature work directly to `master`. Merge (or open a PR
   against) `master` only once the feature's definition of done (§6) is met.
 - One feature branch may span multiple agents (backend + frontend +
@@ -86,7 +125,8 @@ Notes on this repo's index:
   (or run `no-mistakes`/`no-mistakes -y` for the TUI). The gate runs the
   validation pipeline in a disposable worktree and only forwards the branch
   to `origin` and opens the PR once every check passes. This is the
-  mandatory path to any PR for this repo.
+  mandatory path to any PR for this repo. The gate can be configured to
+  validate branch names against this spec (via `commit-check`).
 
 ## 3. Sub-agents
 

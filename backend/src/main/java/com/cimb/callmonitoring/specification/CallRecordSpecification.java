@@ -22,7 +22,7 @@ public final class CallRecordSpecification {
 
         if (StringUtils.hasText(q)) {
             String pattern = "%" + q.trim().toLowerCase() + "%";
-            spec = spec.and(searchAllColumns(pattern));
+            spec = spec.and(searchByCallIdAndCsName(pattern));
         }
 
         if (startDate != null) {
@@ -51,14 +51,11 @@ public final class CallRecordSpecification {
         return spec;
     }
 
-    private static Specification<CallRecord> searchAllColumns(String pattern) {
+    private static Specification<CallRecord> searchByCallIdAndCsName(String pattern) {
         return (root, query, cb) -> {
-            var callIdLike = cb.like(cb.lower(root.get("callId").as(String.class)), pattern);
+            var callIdLike = cb.like(cb.lower(cb.concat(root.get("callId").as(String.class), "")), pattern);
             var csNameLike = cb.like(cb.lower(root.get("csName")), pattern);
-            var customerNameLike = cb.like(cb.lower(root.get("customerName")), pattern);
-            var timestampLike = cb.like(cb.lower(root.get("callTimestamp").as(String.class)), pattern);
-            var sentimentLike = cb.like(cb.lower(root.get("sentimentScore").as(String.class)), pattern);
-            return cb.or(callIdLike, csNameLike, customerNameLike, timestampLike, sentimentLike);
+            return cb.or(callIdLike, csNameLike);
         };
     }
 }

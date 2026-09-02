@@ -1,26 +1,44 @@
 {
   "name": "frontend",
   "version": "1.0.0",
-  "description": "",
+  "description": "CIMB call monitoring frontend",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "lint": "eslint .",
+    "typecheck": "vue-tsc --noEmit",
+    "preview": "vite preview"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@primevue/themes": "^4.5.4",
+    "@primeuix/themes": "^2.0.3",
     "@tanstack/vue-query": "^5.102.8",
+    "@vee-validate/zod": "^4.15.1",
     "@vitejs/plugin-vue": "^6.0.8",
+    "axios": "^1.7.9",
+    "pinia": "^2.3.0",
     "primevue": "^5.0.1",
     "vee-validate": "^4.15.1",
     "vite": "^8.2.2",
     "vue": "^3.5.42",
     "vue-router": "^4.6.4",
-    "zod": "^4.5.4"
+    "zod": "^3.24.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "@vue/test-utils": "^2.4.6",
+    "eslint": "^9.17.0",
+    "eslint-plugin-vue": "^9.32.0",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.0",
+    "vue-tsc": "^2.2.0"
+  }
 }

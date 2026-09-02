@@ -105,9 +105,16 @@ beyond this list are allowed but MUST be documented here before use.
    `feature/-new-login`, `feature/new-login-`, `release/v1.-2.0` are all invalid.
 3. No spaces or underscores — `fix/header bug` and `fix/header_bug` are invalid.
 4. Keep it clear and concise — descriptive yet short.
-5. Include ticket/issue number in lowercase when one exists —
-   e.g. `feature/issue-123-new-login`, `feature/tht-mon-us-001-call-table`
-   (lowercase the ticket ID; `feature/THT-MON-US-001-call-table` is invalid).
+5. Include the ticket/issue code when one exists, placed right after the type
+   prefix — format: `<type>/<ticket-code>-<description>`.
+   - Lowercase the ticket ID — `feature/tht-mon-us-001-call-table` is valid;
+     `feature/THT-MON-US-001-call-table` is invalid.
+   - Keep the description short, hyphen-separated.
+   - Examples:
+     `feature/US-01-call-monitoring`,
+     `feature/issue-123-new-login`,
+     `feature/tht-mon-us-001-call-table`,
+     `fix/JIRA-456-null-pointer-on-login`.
 
 Formal ABNF (spec): `branch-name = trunk-branch / prefixed-branch` where
 `prefixed-branch = type "/" description`, `description = desc-segment *("-" desc-segment)`,
@@ -144,6 +151,39 @@ frontend, in separate commits.
 Each agent file assumes this AGENTS.md has already been read and does not
 repeat the project rules above — only its own scope and general
 responsibilities.
+
+## 3.1 Feature planning flow (grilling → spec → implementation)
+
+Every feature/ticket follows the same planning-to-implementation flow so that
+decisions are captured once and reused by all implementers:
+
+1. **Grill the feature** — run a `/grilling` session (grill-with-docs /
+   grill-me) against the ticket before writing code. Resolve scope questions
+   (auth in/out, API shape, data semantics, schema, UI language, seed data,
+   testing seams) and record every decision as an ADR plus a glossary.
+2. **Write the spec** — run `/to-spec` to synthesize the conversation into a
+   spec (problem statement, solution, user stories, implementation decisions,
+   testing decisions, out of scope, further notes).
+3. **Store both in `.agentic/doc/<ticket-code>/`** — for every ticket, create a
+   folder under `.agentic/doc/` named by the ticket code and save two files
+   there:
+   - `grilling-plan.md` — the interview decisions, ADRs, glossary, and the
+     ordered implementation plan (rather than asking implementers to re-derive
+     them).
+   - `to-spec.md` — the synthesized spec.
+   - Ticket code matches the story ID (e.g. `.agentic/doc/THT-MON-US-001/`).
+4. **Implement against the docs** — run `/implement` to drive the work. It
+   reads `grilling-plan.md` and `to-spec.md` and dispatches to the backend,
+   frontend, and devops implementers, following the ADRs, glossary (use the
+   domain vocabulary), and ordered commit plan they contain.
+
+Rules:
+- Do not skip the grilling/spec step for a new ticket; the docs are the
+  source of truth for implementation decisions, not a live conversation.
+- Keep `.agentic/doc/<ticket-code>/` scoped to that ticket — one folder per
+  ticket, no cross-ticket docs.
+- Respect ADRs in the area you're touching; add a new ADR when a decision
+  of lasting significance is made rather than overwriting an existing one.
 
 ## 4. Git commit convention — Conventional Commits v1.0.0
 

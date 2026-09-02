@@ -139,10 +139,11 @@ and the concrete contributions AI made across each feature.
 
 | Tool | Role |
 |---|---|
-| **Google Antigravity IDE** (Gemini / Claude models) | Primary pair-programming agent — architecture decisions, code generation, test authoring, debugging |
-| **Antigravity slash commands** (`/grill-me`, `/to-spec`, `/implement`) | Structured feature-planning workflow |
+| **Google Antigravity IDE** (Gemini / Claude models) | Primary pair-programming agent in early features — architecture decisions, code generation, test authoring, debugging |
+| **OpenCode + Muse Spark** (`opencode.ai`, `muse-spark-1.2`) | Current primary agent runtime — same slash-command workflow (`/grill-me`, `/to-spec`, `/implement`), CodeGraph MCP, `no-mistakes` gate integration |
+| **Antigravity / OpenCode slash commands** (`/grill-me`, `/to-spec`, `/implement`) | Structured feature-planning workflow (grill → spec → implement → review) |
 | **`no-mistakes` gate** | Pre-push validation (lint, typecheck, unit tests) before every PR |
-| **CodeGraph** | Semantic code search used by agents to locate symbols before editing |
+| **CodeGraph** | Semantic code search used by agents to locate symbols before editing (MCP `codegraph_explore` + `codegraph explore` CLI) |
 
 ### Workflow
 
@@ -201,6 +202,32 @@ Spec: `.agentic/doc/THT-MON-US-002/`
   with `cb.concat(root.get("callId").as(String.class), "")` to force
   text conversion before the `lower()` call. Also scoped the search to
   **Call ID and CS Name** only (previously attempted to search all columns).
+
+### Agent instruction files (`AGENTS.md` & `GEMINI.md`)
+
+Both files are hand-authored and committed — not auto-generated — and together define how any AI agent (Antigravity, OpenCode, Claude, etc.) must work in this repo. `AGENTS.md` is the single source of truth; `GEMINI.md` is a thin adapter for Gemini/Antigravity.
+
+**`AGENTS.md` — canonical entry point** (`AGENTS.md:1`):
+
+Created at repo init and evolved via `docs:` commits (branching rules in `5bb94cf`, sub-agent + planning flow in `f1868c8`). Every agent must read it before any action. Structure:
+
+| § | Heading | What it defines |
+|---|---|---|
+| 1 | Project summary | Stack, hard rules (no hardcoded data, JWT, runnable via README), environment notes (PowerShell 5.1, Docker, PrimeVue registration), and CodeGraph usage (`codegraph_explore` / `codegraph explore` / `codegraph sync`) |
+| 2 | Branching — Conventional Branch 1.1.0 | Branch format `<type>/<description>`, allowed `type` prefixes, naming rules, ticket-code placement, trunk branches (`master`/`main`/`develop`), `no-mistakes` push gate |
+| 3 | Sub-agents | Three implementers under `agents/` — `backend-implementer.md`, `frontend-implementer.md`, `devops-implementer.md` — and dispatch order (backend first for cross-cutting changes) |
+| 3.1 | Feature planning flow | `grill-me` → `to-spec` → `implement` cycle; outputs stored in `.agentic/doc/<ticket>/grilling-plan.md` + `to-spec.md` with ADRs and glossary |
+| 4 | Git commit convention | Conventional Commits v1.0.0 — types, scopes (`backend`/`frontend`/`infra`/…), breaking-change and `Refs:` footer rules, atomic-commit examples |
+| 5 | Pre-commit checks | Tests + `npm run lint` + `npm run typecheck` must pass before every commit; Playwright E2E only after a feature is complete |
+| 6 | Definition of done | Build, tests/lint/typecheck, E2E, commit style, README, no hardcoded data, `no-mistakes` gate |
+
+**`GEMINI.md` — Gemini/Antigravity adapter** (`GEMINI.md:1`):
+
+Added in `eb3dbbb` (`doc: add gemini.md`). 12 lines, intentionally minimal — it does not duplicate `AGENTS.md`. It instructs Gemini/Antigravity to read `AGENTS.md` as the primary source of truth and restates the six core directives: (1) AGENTS.md is authoritative, (2) use CodeGraph before grep/find, (3) Conventional Branch 1.1.0 on feature branches, (4) Conventional Commits 1.0.0, (5) no hardcoded data / JWT-protected API, (6) pre-commit checks. This keeps Antigravity aligned with OpenCode and other agents without drift between files.
+
+**OpenCode integration:**
+
+OpenCode (`~/.config/opencode/opencode.jsonc:1`, `~/.config/opencode/AGENTS.md:1`) reads the same `AGENTS.md` at the repo root via its AGENTS.md convention and loads the CodeGraph MCP (`codegraph serve --mcp`) plus the project skills under `.claude/skills/` / `.agents/skills/` (synced via `skills-lock.json`). No separate `OPENCODE.md` is needed — extending the repo means editing `AGENTS.md` (add a section or ADR) and, only if the change is Gemini-specific, updating the 6-line directive list in `GEMINI.md`.
 
 ### Human oversight
 

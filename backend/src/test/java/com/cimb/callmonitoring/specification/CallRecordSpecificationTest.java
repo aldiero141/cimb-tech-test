@@ -59,9 +59,11 @@ class CallRecordSpecificationTest {
         CriteriaBuilder cb = mock(CriteriaBuilder.class);
         Expression<String> lower = (Expression<String>) mock(Expression.class);
         Predicate like = mock(Predicate.class);
+        when(cb.concat(any(Expression.class), anyString())).thenReturn(lower);
         when(cb.lower(any(Expression.class))).thenReturn(lower);
         when(cb.like(any(Expression.class), anyString())).thenReturn(like);
         when(cb.or(any(Predicate[].class))).thenReturn(like);
+        when(cb.or(any(Predicate.class), any(Predicate.class))).thenReturn(like);
         when(cb.and(any(Predicate[].class))).thenReturn(like);
         // Disambiguate overloads by casting first arg and typing second arg
         when(cb.greaterThanOrEqualTo(any(Expression.class), any(Comparable.class))).thenReturn(like);
@@ -82,7 +84,7 @@ class CallRecordSpecificationTest {
         Specification<CallRecord> spec = CallRecordSpecification.withFilters("siti", null, null, null);
         CriteriaBuilder cb = mockBuilder();
         assertNotNull(spec.toPredicate(mockRoot(), mock(CriteriaQuery.class), cb));
-        verify(cb).or(any(Predicate[].class));
+        verify(cb).or(any(Predicate.class), any(Predicate.class));
     }
 
     @Test

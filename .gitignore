@@ -17,3 +17,11 @@ backend/*.jar
 # Playwright
 .test-results/
 playwright-report/
+
+# Codegraph
+.codegraph/
+
+# ENV
+.env
+.env.dev
+.env.prod

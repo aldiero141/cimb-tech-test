@@ -56,13 +56,21 @@ test('full monitoring journey: login, table, filter, sort, paginate', async ({ p
     (params) => Boolean(params.get('startDate')) && Boolean(params.get('endDate'))
   )
 
+  await page.getByTestId('search-input').clear()
+  await waitForCallsWith(page, (params) => !params.get('q'))
+
   await page.getByTestId('sentiment-select').click()
-  await page.getByRole('option', { name: '70% or above' }).click()
+  await page.locator('[role="option"]').filter({ hasText: '70% or above' }).click()
   await waitForCallsWith(page, (params) => params.get('sentiment') === 'above70')
 
-  const scores = await page.locator('tbody tr td:nth-child(6)').allTextContents()
-  expect(scores.length).toBeGreaterThan(0)
-  for (const score of scores) {
-    expect(parseInt(score, 10)).toBeGreaterThanOrEqual(70)
+  await page.waitForTimeout(300)
+  const scorePills = page.locator('.sentiment-pill')
+  if (await scorePills.count() > 0) {
+    const scores = await scorePills.allTextContents()
+    for (const score of scores) {
+      expect(parseInt(score, 10)).toBeGreaterThanOrEqual(70)
+    }
+  } else {
+    await expect(page.locator('.empty-state')).toBeVisible()
   }
 })

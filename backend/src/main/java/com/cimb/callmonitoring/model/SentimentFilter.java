@@ -8,7 +8,7 @@ public enum SentimentFilter {
         if (value == null || value.isBlank()) {
             return null;
         }
-        return switch (value.toLowerCase()) {
+        return switch (value) {
             case "below70" -> BELOW_70;
             case "above70" -> AT_OR_ABOVE_70;
             default -> null;

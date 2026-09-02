@@ -41,10 +41,10 @@ public final class CallRecordSpecification {
             switch (sentiment) {
                 case BELOW_70 ->
                         spec = spec.and((root, query, cb) ->
-                                cb.lessThan(root.get("sentimentScore"), 70));
+                                cb.lessThan(root.<Short>get("sentimentScore"), (short) 70));
                 case AT_OR_ABOVE_70 ->
                         spec = spec.and((root, query, cb) ->
-                                cb.greaterThanOrEqualTo(root.get("sentimentScore"), 70));
+                                cb.greaterThanOrEqualTo(root.<Short>get("sentimentScore"), (short) 70));
             }
         }
 

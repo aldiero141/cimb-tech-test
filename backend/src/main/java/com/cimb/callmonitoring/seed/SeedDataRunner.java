@@ -83,7 +83,7 @@ public class SeedDataRunner implements CommandLineRunner {
         for (int i = 0; i < RECORD_COUNT; i++) {
             CallRecord record = new CallRecord();
             record.setCallId(UUID.randomUUID());
-            record.setCallTimestamp(start.plusMillis((long) (random.nextDouble() * totalMillis)));
+            record.setCallTimestamp(start.plus((long) (random.nextDouble() * totalMillis), ChronoUnit.MILLIS));
             record.setCsName(CS_NAMES.get(random.nextInt(CS_NAMES.size())));
             record.setCustomerName(CUSTOMER_NAMES.get(random.nextInt(CUSTOMER_NAMES.size())));
             record.setSentimentScore(sentimentScoreWithWeighting());

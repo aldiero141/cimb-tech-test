@@ -63,9 +63,10 @@ class CallRecordSpecificationTest {
         when(cb.like(any(Expression.class), anyString())).thenReturn(like);
         when(cb.or(any(Predicate[].class))).thenReturn(like);
         when(cb.and(any(Predicate[].class))).thenReturn(like);
-        when(cb.greaterThanOrEqualTo(any(Expression.class), any())).thenReturn(like);
-        when(cb.lessThanOrEqualTo(any(Expression.class), any())).thenReturn(like);
-        when(cb.lessThan(any(Expression.class), any())).thenReturn(like);
+        // Disambiguate overloads by casting first arg and typing second arg
+        when(cb.greaterThanOrEqualTo(any(Expression.class), any(Comparable.class))).thenReturn(like);
+        when(cb.lessThanOrEqualTo(any(Expression.class), any(Comparable.class))).thenReturn(like);
+        when(cb.lessThan(any(Expression.class), any(Comparable.class))).thenReturn(like);
         return cb;
     }
 
@@ -90,7 +91,7 @@ class CallRecordSpecificationTest {
                 null, LocalDate.of(2026, 6, 1), null, null);
         CriteriaBuilder cb = mockBuilder();
         assertNotNull(spec.toPredicate(mockRoot(), mock(CriteriaQuery.class), cb));
-        verify(cb).greaterThanOrEqualTo(any(Expression.class), any());
+        verify(cb).greaterThanOrEqualTo(any(Expression.class), any(Comparable.class));
     }
 
     @Test
@@ -99,7 +100,7 @@ class CallRecordSpecificationTest {
                 null, null, LocalDate.of(2026, 8, 31), null);
         CriteriaBuilder cb = mockBuilder();
         assertNotNull(spec.toPredicate(mockRoot(), mock(CriteriaQuery.class), cb));
-        verify(cb).lessThanOrEqualTo(any(Expression.class), any());
+        verify(cb).lessThanOrEqualTo(any(Expression.class), any(Comparable.class));
     }
 
     @Test
@@ -108,7 +109,7 @@ class CallRecordSpecificationTest {
                 null, null, null, SentimentFilter.BELOW_70);
         CriteriaBuilder cb = mockBuilder();
         assertNotNull(spec.toPredicate(mockRoot(), mock(CriteriaQuery.class), cb));
-        verify(cb).lessThan(any(Expression.class), any());
+        verify(cb).lessThan(any(Expression.class), any(Comparable.class));
     }
 
     @Test

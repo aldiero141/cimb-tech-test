@@ -27,7 +27,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:callmonitoring
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/callmonitoring
       - SPRING_DATASOURCE_USERNAME=supervisor
       - SPRING_DATASOURCE_PASSWORD=supervisor123
       - SPRING_PROFILES_ACTIVE=docker

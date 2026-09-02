@@ -31,6 +31,7 @@ public class JwtService {
                 .subject(userDetails.getUsername())
                 .issuedAt(now)
                 .expiration(expiry)
+                .id(java.util.UUID.randomUUID().toString())
                 .signWith(signingKey)
                 .compact();
     }

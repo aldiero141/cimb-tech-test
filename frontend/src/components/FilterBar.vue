@@ -51,7 +51,7 @@ const sentimentModel = computed({
         <span class="material-symbols-outlined input-icon">search</span>
         <InputText
           v-model="search"
-          placeholder="Search Call ID or Name..."
+          placeholder="Search Call ID or CS Name..."
           class="custom-filter-input"
           data-testid="search-input"
         />
@@ -67,7 +67,7 @@ const sentimentModel = computed({
           :min-date="minDate"
           :max-date="maxDate"
           date-format="dd/mm/yy"
-          placeholder="Select period (last 3 months)"
+          placeholder="Select period"
           class="custom-datepicker"
           data-testid="period-picker"
         />

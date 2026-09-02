@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:callmonitoring
+    url: jdbc:postgresql://postgres:5432/callmonitoring
     username: supervisor
     password: supervisor123
   jpa:

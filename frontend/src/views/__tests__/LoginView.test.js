@@ -31,7 +31,7 @@ function mountLogin(router) {
   return mount(LoginView, {
     global: {
       plugins: [
-        [PrimeVue, { theme: { preset: Aura } }],
+        [PrimeVue, { theme: { preset: Aura, options: { darkModeSelector: false } } }],
         createPinia(),
         router
       ]

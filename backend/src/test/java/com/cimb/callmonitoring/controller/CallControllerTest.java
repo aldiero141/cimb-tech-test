@@ -49,7 +49,8 @@ class CallControllerTest {
 
     @Test
     void getCallsReturnsContent() {
-        Page<CallRecord> page = new PageImpl<>(List.of(callRecord()));
+        Page<CallRecord> page = new PageImpl<>(List.of(callRecord()),
+                org.springframework.data.domain.PageRequest.of(0, 5), 1);
         when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
 
         PageResponse<CallRecord> result = controller.getCalls(
@@ -65,7 +66,8 @@ class CallControllerTest {
 
     @Test
     void getCallsAppliesFiltersAndSort() {
-        Page<CallRecord> page = new PageImpl<>(List.of());
+        Page<CallRecord> page = new PageImpl<>(List.of(),
+                org.springframework.data.domain.PageRequest.of(2, 5), 0);
         when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
 
         PageResponse<CallRecord> result = controller.getCalls(

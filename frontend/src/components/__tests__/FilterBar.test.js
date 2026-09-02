@@ -8,7 +8,7 @@ function mountFilterBar(props = {}) {
   return mount(FilterBar, {
     props: { q: '', dateRange: null, sentiment: '', ...props },
     global: {
-      plugins: [[PrimeVue, { theme: { preset: Aura } }]]
+      plugins: [[PrimeVue, { theme: { preset: Aura, options: { darkModeSelector: false } } }]]
     }
   })
 }
@@ -25,7 +25,10 @@ describe('FilterBar', () => {
   it('renders the search input and sentiment filter', () => {
     const wrapper = mountFilterBar()
     expect(wrapper.find('input').exists()).toBe(true)
-    expect(wrapper.text()).toContain('All')
+    // PrimeVue 4 (MIT, free) renders the placeholder until the overlay opens;
+    // PrimeVue 5 rendered options inline. Check for placeholder which is stable
+    // across both majors and confirms the Select is mounted.
+    expect(wrapper.text()).toContain('Sentiment')
   })
 
   it('emits update:q after typing with debounce', async () => {

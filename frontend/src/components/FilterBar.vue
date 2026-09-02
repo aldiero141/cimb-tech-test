@@ -17,7 +17,7 @@ const maxDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 const minDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate())
 
 const sentimentOptions = [
-  { label: 'All', value: '' },
+  { label: 'All Sentiment', value: '' },
   { label: 'Below 70%', value: 'below70' },
   { label: '70% or above', value: 'above70' }
 ]
@@ -45,34 +45,44 @@ const sentimentModel = computed({
 
 <template>
   <div class="filter-bar">
-    <div class="filter-item search">
-      <span class="p-input-icon-left w-full">
-        <i class="pi pi-search" />
-        <InputText v-model="search" placeholder="Search..." class="w-full" data-testid="search-input" />
-      </span>
+    <!-- Search Input -->
+    <div class="filter-item search-item">
+      <div class="input-wrapper">
+        <span class="material-symbols-outlined input-icon">search</span>
+        <InputText
+          v-model="search"
+          placeholder="Search Call ID or Name..."
+          class="custom-filter-input"
+          data-testid="search-input"
+        />
+      </div>
     </div>
 
-    <div class="filter-item">
-      <DatePicker
-        v-model="dateRangeModel"
-        selection-mode="range"
-        :min-date="minDate"
-        :max-date="maxDate"
-        date-format="dd/mm/yy"
-        placeholder="Select period (last 3 months)"
-        class="w-full"
-        data-testid="period-picker"
-      />
+    <!-- Date Range Picker -->
+    <div class="filter-item period-item">
+      <div class="input-wrapper">
+        <DatePicker
+          v-model="dateRangeModel"
+          selection-mode="range"
+          :min-date="minDate"
+          :max-date="maxDate"
+          date-format="dd/mm/yy"
+          placeholder="Select period (last 3 months)"
+          class="custom-datepicker"
+          data-testid="period-picker"
+        />
+      </div>
     </div>
 
-    <div class="filter-item">
+    <!-- Sentiment Filter -->
+    <div class="filter-item sentiment-item">
       <Select
         v-model="sentimentModel"
         :options="sentimentOptions"
         option-label="label"
         option-value="value"
         placeholder="Sentiment"
-        class="w-full"
+        class="custom-select"
         data-testid="sentiment-select"
       />
     </div>
@@ -82,15 +92,74 @@ const sentimentModel = computed({
 <style scoped>
 .filter-bar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .filter-bar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
 }
 
 .filter-item {
-  flex: 1 1 15rem;
+  width: 100%;
 }
 
-.search {
-  flex: 2 1 20rem;
+@media (min-width: 640px) {
+  .search-item {
+    width: 16rem;
+  }
+  .period-item {
+    width: 13rem;
+  }
+  .sentiment-item {
+    width: 12rem;
+  }
+}
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--text-muted, #64748B);
+  font-size: 1.25rem !important;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.custom-filter-input {
+  width: 100%;
+  padding-left: 2.5rem !important;
+  padding-right: 0.75rem !important;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+  font-size: 0.875rem !important;
+  border: 1px solid var(--surface-border, #E2E8F0) !important;
+  border-radius: var(--radius-sm, 0.25rem) !important;
+  background-color: var(--surface-card, #ffffff) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.custom-datepicker {
+  width: 100%;
+}
+
+:deep(.p-datepicker) {
+  font-family: var(--font-sans);
+}
+
+.custom-select {
+  width: 100%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 </style>

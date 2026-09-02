@@ -22,7 +22,7 @@ function mountTable(props = {}) {
       ...props
     },
     global: {
-      plugins: [[PrimeVue, { theme: { preset: Aura } }]]
+      plugins: [[PrimeVue, { theme: { preset: Aura, options: { darkModeSelector: false } } }]]
     }
   })
 }

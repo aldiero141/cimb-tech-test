@@ -93,6 +93,7 @@ Every branch name MUST be either a trunk branch or a prefixed branch matching
 | `codex` | OpenAI Codex | `codex/optimize-query` |
 | `copilot` | GitHub Copilot | `copilot/add-login-page` |
 | `cursor` | Cursor | `cursor/fix-header-bug` |
+| `opencode` | OpenCode (Muse Spark) | `opencode/add-call-table` |
 
 Trunk branches (`main`, `master`, `develop`) do not use a prefix. Custom types
 beyond this list are allowed but MUST be documented here before use.

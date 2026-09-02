@@ -91,7 +91,7 @@ Vite dev server on `http://localhost:5173`. The `/api` proxy forwards to
 
 `GET /api/calls` query parameters:
 
-- `q` — free-text search (matches Call ID, CS name, customer name, sentiment)
+- `q` — free-text search (matches Call ID or CS name)
 - `startDate` / `endDate` — period filter (`yyyy-MM-dd`, inclusive)
 - `sentiment` — `below70` or `above70`
 - `sort` — `callId`, `callTimestamp`, `csName`, `customerName`, `sentimentScore` (default `callTimestamp`)
@@ -131,20 +131,85 @@ npm run test:e2e            # playwright test (e2e/monitoring.spec.js)
 
 ## AI Usage
 
-This feature was planned and implemented with AI assistance, following the
-repo's `AGENTS.md` planning flow:
+This project was planned, implemented, and debugged with AI assistance
+throughout. The following describes the tools used, the workflow followed,
+and the concrete contributions AI made across each feature.
 
-1. **Grilling to spec** — the ticket was grilling-interviewed and the decisions
-   (auth scope, server-side search/filter/sort/pagination, seed data
-   semantics, UI language, component decomposition) recorded as ADRs and a
-   glossary in `.agentic/doc/THT-MON-US-001/grilling-plan.md`.
-2. **Spec** — synthesized into `.agentic/doc/THT-MON-US-001/to-spec.md`
-   (problem statement, user stories, API contract, testing decisions).
-3. **Implementation** — an AI agent (opencode + Claude Code) implemented the
-   backend, frontend, and devops changes against those docs on branch
-   `feature/US-01-call-monitoring`, with tests and a code review run as part
-   of the branch workflow.
+### Tools
 
-All code is reviewed against the repo's coding standards and the originating
-spec before merging; no secrets or hardcoded data are introduced, and data
-always flows from PostgreSQL → backend API → UI.
+| Tool | Role |
+|---|---|
+| **Google Antigravity IDE** (Gemini / Claude models) | Primary pair-programming agent — architecture decisions, code generation, test authoring, debugging |
+| **Antigravity slash commands** (`/grill-me`, `/to-spec`, `/implement`) | Structured feature-planning workflow |
+| **`no-mistakes` gate** | Pre-push validation (lint, typecheck, unit tests) before every PR |
+| **CodeGraph** | Semantic code search used by agents to locate symbols before editing |
+
+### Workflow
+
+Every feature followed the same planning-to-implementation cycle mandated by
+`AGENTS.md`:
+
+1. **Grill the feature** (`/grill-me`) — an interactive interview resolved scope
+   questions (API shape, auth rules, data semantics, testing seams). Decisions
+   were recorded as ADRs and a domain glossary.
+2. **Write the spec** (`/to-spec`) — the interview was synthesised into a spec
+   (problem statement, user stories, API contract, implementation decisions,
+   out-of-scope notes) stored under `.agentic/doc/<ticket>/`.
+3. **Implement** (`/implement`) — the agent read the grilling plan and spec,
+   then dispatched backend, frontend, and devops changes in separate, atomic
+   commits following Conventional Commits v1.0.0.
+4. **Review** — a code-review sub-agent checked every PR against the repo's
+   coding standards and the originating spec before merge.
+
+### Features built with AI
+
+#### US-01 — Call Monitoring Dashboard (`feature/US-01-call-monitoring`)
+
+The core feature, built end-to-end by the AI agent:
+
+- **Backend**: `CallRecord` JPA entity, repositories, `CallRecordSpecification`
+  (dynamic JPA Criteria API filtering/sorting/pagination), JWT auth
+  (`/api/auth/login`), `SeedDataRunner` (100 call records + admin user).
+- **Frontend**: `LoginView` (vee-validate + Zod), `MonitoringView` with
+  `FilterBar` and `CallDataTable` (PrimeVue), `useCallRecords` composable
+  (TanStack Vue Query), Pinia auth store, Axios JWT interceptor, Vue Router
+  guard.
+- **Infra**: Multi-stage Dockerfiles for backend (Maven → JRE) and frontend
+  (Node → nginx), Docker Compose orchestration with postgres healthcheck,
+  nginx `/api` proxy.
+- **Tests**: JUnit unit tests (specification, JWT, controller), Vitest unit
+  tests (composable, components), Playwright E2E (login → monitoring flow).
+
+Spec: `.agentic/doc/THT-MON-US-001/`
+
+#### US-02 — Sign-Out Flow (`feat/sign-out-flow`)
+
+- **Backend**: `POST /api/auth/logout` endpoint with JUnit coverage.
+- **Frontend**: Sign-out button in the dashboard header, Pinia store `logout`
+  action (clears token + TanStack query cache), 401 Axios response interceptor
+  (auto-redirects to login on expired token).
+- **Tests**: Vitest unit tests for the updated auth store and header component;
+  Playwright E2E covering the full sign-out flow and 401 redirect.
+
+Spec: `.agentic/doc/THT-MON-US-002/`
+
+#### Bug fixes
+
+- **`fix/monitoring-table-filter`** — Fixed HTTP 403 on search (`/api/calls?q=`).
+  Root cause: PostgreSQL has no `lower(uuid)` function; Hibernate 6 did not
+  emit a SQL `CAST` when calling `cb.lower()` on a UUID field. Fix: replaced
+  with `cb.concat(root.get("callId").as(String.class), "")` to force
+  text conversion before the `lower()` call. Also scoped the search to
+  **Call ID and CS Name** only (previously attempted to search all columns).
+
+### Human oversight
+
+All AI-generated code was reviewed by the developer before merge:
+
+- Every PR was checked against the repo's coding standards (via the
+  code-review sub-agent) and the originating spec.
+- No secrets, hardcoded data, or frontend-side data fabrication were
+  introduced; all displayed data originates from PostgreSQL via the
+  JWT-protected API.
+- Git history is broken into logical, atomic commits — reviewable
+  independently.

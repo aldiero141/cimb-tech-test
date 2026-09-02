@@ -1,4 +1,6 @@
+<script setup>
+</script>
+
 <template>
-  <h1>Call Monitoring</h1>
-  <p>Project setup complete.</p>
+  <router-view />
 </template>

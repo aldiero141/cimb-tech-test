@@ -1,8 +1,8 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useForm, useField } from 'vee-validate'
 import { toFormValidator } from '@vee-validate/zod'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
@@ -10,7 +10,11 @@ import { loginSchema, loginFormValues } from '../schemas/loginSchema'
 import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
+
+const isSignedOutNotice = computed(() => route.query.signedOut === 'true')
+const isExpiredNotice = computed(() => route.query.expired === 'true')
 
 const { handleSubmit } = useForm({
   validationSchema: toFormValidator(loginSchema),
@@ -48,6 +52,14 @@ const onSubmit = handleSubmit(async (values) => {
         <h1 class="login-title">Call Monitoring</h1>
         <p class="login-subtitle">Sign in to access the supervisor dashboard</p>
       </div>
+
+      <Message v-if="isSignedOutNotice" severity="info" class="signed-out-message">
+        You have been successfully signed out.
+      </Message>
+
+      <Message v-if="isExpiredNotice" severity="warn" class="expired-message">
+        Your session has expired. Please sign in again.
+      </Message>
 
       <!-- Form -->
       <form class="login-form" @submit="onSubmit" novalidate>

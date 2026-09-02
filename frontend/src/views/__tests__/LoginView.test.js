@@ -98,4 +98,22 @@ describe('LoginView', () => {
 
     expect(wrapper.text()).toContain('Invalid username or password')
   })
+
+  it('shows signed out notification when query param signedOut=true is present', async () => {
+    const router = buildRouter()
+    router.push('/login?signedOut=true')
+    await router.isReady()
+    const wrapper = mountLogin(router)
+
+    expect(wrapper.text()).toContain('You have been successfully signed out.')
+  })
+
+  it('shows session expired notification when query param expired=true is present', async () => {
+    const router = buildRouter()
+    router.push('/login?expired=true')
+    await router.isReady()
+    const wrapper = mountLogin(router)
+
+    expect(wrapper.text()).toContain('Your session has expired. Please sign in again.')
+  })
 })

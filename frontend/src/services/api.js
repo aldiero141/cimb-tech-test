@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { queryClient } from './queryClient'
 
 export const api = axios.create({
   baseURL: '/api'
@@ -18,8 +19,11 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       localStorage.removeItem('username')
+      if (queryClient) {
+        queryClient.clear()
+      }
       if (!window.location.pathname.startsWith('/login')) {
-        window.location.href = '/login'
+        window.location.href = '/login?expired=true'
       }
     }
     return Promise.reject(error)

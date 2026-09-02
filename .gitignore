@@ -25,3 +25,7 @@ playwright-report/
 .env
 .env.dev
 .env.prod
+
+# Playwright Test Results
+test-results/
+frontend/test-results/

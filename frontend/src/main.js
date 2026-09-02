@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import Aura from '@primeuix/themes/aura'
 import { VueQueryPlugin } from '@tanstack/vue-query'
+import { queryClient } from './services/queryClient'
 import App from './App.vue'
 import router from './router'
 import './style.css'
@@ -19,6 +20,6 @@ app.use(PrimeVue, {
     }
   }
 })
-app.use(VueQueryPlugin)
+app.use(VueQueryPlugin, { queryClient })
 
 app.mount('#app')

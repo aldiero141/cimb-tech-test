@@ -16,6 +16,11 @@ spring:
   profiles:
     active: docker
 
+app:
+  jwt:
+    secret: ${JWT_SECRET:cimb-call-monitoring-dev-secret-key-please-change-me-0123456789}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
 management:
   endpoints:
     web:

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { api } from '../services/api'
+import { queryClient } from '../services/queryClient'
 
 const TOKEN_KEY = 'token'
 const USERNAME_KEY = 'username'
@@ -23,11 +24,22 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem(USERNAME_KEY, data.username)
     },
 
-    logout() {
-      this.token = ''
-      this.username = ''
-      localStorage.removeItem(TOKEN_KEY)
-      localStorage.removeItem(USERNAME_KEY)
+    async logout() {
+      try {
+        if (this.token) {
+          await api.post('/auth/logout')
+        }
+      } catch {
+        // Ignore network errors to guarantee client cleanup always proceeds
+      } finally {
+        this.token = ''
+        this.username = ''
+        localStorage.removeItem(TOKEN_KEY)
+        localStorage.removeItem(USERNAME_KEY)
+        if (queryClient) {
+          queryClient.clear()
+        }
+      }
     }
   }
 })

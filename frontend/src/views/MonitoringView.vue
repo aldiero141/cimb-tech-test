@@ -1,11 +1,13 @@
 <script setup>
 import Message from 'primevue/message'
+import { useRouter } from 'vue-router'
 import { useCallRecords } from '../composables/useCallRecords'
 import FilterBar from '../components/FilterBar.vue'
 import CallDataTable from '../components/CallDataTable.vue'
 import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
+const router = useRouter()
 const { filters, data, totalElements, isLoading, isFetching, isError, updateFilter, setPage, setSort } =
   useCallRecords()
 
@@ -15,6 +17,11 @@ function onSort(field, order) {
 
 function onPageChange(page) {
   setPage(page)
+}
+
+async function handleSignOut() {
+  await auth.logout()
+  router.push({ name: 'login', query: { signedOut: 'true' } })
 }
 </script>
 
@@ -45,7 +52,7 @@ function onPageChange(page) {
               <span class="material-symbols-outlined avatar-icon">person</span>
             </div>
             <span v-if="auth.username" class="user-name">{{ auth.username }}</span>
-            <button class="sign-out-btn" @click="auth.logout()">Sign Out</button>
+            <button class="sign-out-btn" @click="handleSignOut">Sign Out</button>
           </div>
         </div>
       </div>

@@ -22,7 +22,7 @@ cimb-tech-test/
 ├── frontend/    # Vue 3 + Vite
 ├── compose.yml  # postgres + backend + frontend orchestration
 ├── .env         # environment / credential overrides
-├── .agentic/    # grilling plan + spec for this feature (THT-MON-US-001)
+├── .agentic/docs/tickets/  # grilling plan + spec per ticket (e.g. THT-MON-US-001)
 └── README.md
 ```
 
@@ -155,7 +155,7 @@ Every feature followed the same planning-to-implementation cycle mandated by
    were recorded as ADRs and a domain glossary.
 2. **Write the spec** (`/to-spec`) — the interview was synthesised into a spec
    (problem statement, user stories, API contract, implementation decisions,
-   out-of-scope notes) stored under `.agentic/doc/<ticket>/`.
+   out-of-scope notes) stored under `.agentic/docs/tickets/<ticket>/`.
 3. **Implement** (`/implement`) — the agent read the grilling plan and spec,
    then dispatched backend, frontend, and devops changes in separate, atomic
    commits following Conventional Commits v1.0.0.
@@ -181,7 +181,7 @@ The core feature, built end-to-end by the AI agent:
 - **Tests**: JUnit unit tests (specification, JWT, controller), Vitest unit
   tests (composable, components), Playwright E2E (login → monitoring flow).
 
-Spec: `.agentic/doc/THT-MON-US-001/`
+Spec: `.agentic/docs/tickets/THT-MON-US-001/`
 
 #### US-02 — Sign-Out Flow (`feat/sign-out-flow`)
 
@@ -192,7 +192,7 @@ Spec: `.agentic/doc/THT-MON-US-001/`
 - **Tests**: Vitest unit tests for the updated auth store and header component;
   Playwright E2E covering the full sign-out flow and 401 redirect.
 
-Spec: `.agentic/doc/THT-MON-US-002/`
+Spec: `.agentic/docs/tickets/THT-MON-US-002/`
 
 #### Bug fixes
 
@@ -215,8 +215,8 @@ Created at repo init and evolved via `docs:` commits (branching rules in `5bb94c
 |---|---|---|
 | 1 | Project summary | Stack, hard rules (no hardcoded data, JWT, runnable via README), environment notes (PowerShell 5.1, Docker, PrimeVue registration), and CodeGraph usage (`codegraph_explore` / `codegraph explore` / `codegraph sync`) |
 | 2 | Branching — Conventional Branch 1.1.0 | Branch format `<type>/<description>`, allowed `type` prefixes, naming rules, ticket-code placement, trunk branches (`master`/`main`/`develop`), `no-mistakes` push gate |
-| 3 | Sub-agents | Three implementers under `agents/` — `backend-implementer.md`, `frontend-implementer.md`, `devops-implementer.md` — and dispatch order (backend first for cross-cutting changes) |
-| 3.1 | Feature planning flow | `grill-me` → `to-spec` → `implement` cycle; outputs stored in `.agentic/doc/<ticket>/grilling-plan.md` + `to-spec.md` with ADRs and glossary |
+| 3 | Sub-agents | Four implementers under `.agentic/agents/` — `backend-`, `frontend-`, `devops-`, `qa-implementer.md` — and dispatch order (backend first) |
+| 3.1 | Feature planning flow | `grill-me` → `to-spec` → `implement` cycle; outputs stored in `.agentic/docs/tickets/<ticket>/grilling-plan.md` + `to-spec.md` with ADRs and glossary |
 | 4 | Git commit convention | Conventional Commits v1.0.0 — types, scopes (`backend`/`frontend`/`infra`/…), breaking-change and `Refs:` footer rules, atomic-commit examples |
 | 5 | Pre-commit checks | Tests + `npm run lint` + `npm run typecheck` must pass before every commit; Playwright E2E only after a feature is complete |
 | 6 | Definition of done | Build, tests/lint/typecheck, E2E, commit style, README, no hardcoded data, `no-mistakes` gate |

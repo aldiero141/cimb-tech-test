@@ -1,4 +1,4 @@
-# GEMINI.md — Instructions for Gemini / Antigravity Agents
+# CLAUDE.md — Instructions for Claude Code Agents
 
 Before performing any action, planning, coding, or executing commands in this repository, you MUST read and strictly adhere to all instructions, workflows, conventions, and rules defined in [AGENTS.md](./AGENTS.md).
 

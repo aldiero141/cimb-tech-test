@@ -1,285 +1,61 @@
 # AGENTS.md — CIMB Tech Test: Call Monitoring
 
 This file is the entry point for any agent (human or AI) working in this repo.
-It describes the project, how work is organized across sub-agents, and the
-branching, testing, and commit conventions every agent must follow for every
-feature — not just the one currently in progress.
+It is a thin index — the single source of truth for each section lives in
+`.agentic/`. Do not duplicate rule text here; follow the links.
 
-## 1. Project summary
+## Start here
 
-**Repo:** `cimb-tech-test` (monorepo) — a supervisor call-monitoring
-dashboard: a JWT-protected Spring Boot API backed by PostgreSQL, with a
-Vue 3 + PrimeVue frontend.
+1. Read `.agentic/docs/rules/project-summary.md` first (stack, repo identity, read-next list).
+2. Then use this index to open only the section file you need.
 
-**Stack**
-- Backend: Java 21, Spring Boot 3.5.x, Spring Data JPA, Spring Security, JJWT 0.12.5, PostgreSQL
-- Frontend: Vue 3 + Vite, PrimeVue, vee-validate + Zod, TanStack Vue Query, Axios, Pinia, Vue Router
-- Infra: Docker Compose (postgres:16, backend :8080, frontend/nginx :80)
-- Testing: JUnit (backend), Vitest (frontend unit), ESLint + TypeScript typecheck (frontend), Playwright (E2E)
+## Index
 
-## Finding context with CodeGraph
-
-Before reaching for grep/find or reading files to understand or locate code,
-use the CodeGraph index (`.codegraph/` at the repo root) — it's the fastest,
-most accurate way to get context:
-
-- **`codegraph_explore "<question or symbol names>"`** (MCP tool) — returns the
-  relevant symbols' verbatim source plus call paths in one call. Use this first
-  for most questions: "how does X work", "where/what is X", architecture,
-  a bug, or the symbols you're about to change.
-- **`codegraph explore "<query>"`** (shell) — same output when the MCP tool isn't
-  available.
-- **`codegraph status`** — confirm the index is current; run **`codegraph sync`**
-  (or `codegraph index`) after adding or changing source files so lookups reflect
-  the latest code. Rebuilds are cheap for this repo.
-
-Notes on this repo's index:
-- CodeGraph is language-aware — it won't list scaffolding/config assets you
-  still read directly (e.g. `application.yml`, `compose.yml`, `Dockerfile`).
-- There is currently **no Java source** under `backend/src/main` (only
-  `application.yml`), so backend queries return nothing until entity/service/
-  controller classes exist. Once Java code lands, run `codegraph sync` and
-  re-query.
-- If the index is stale or missing a symbol, fall back to Grep/Glob — don't
-  silently trust an outdated graph.
-
-**Hard rules for every agent**
-- Data displayed in the UI comes from PostgreSQL via the backend API — never
-  hardcode data in the frontend.
-- Backend API must be JWT-protected.
-- The app must be runnable end-to-end per the README instructions.
-- README must include an "AI Usage" section.
-- Git history must be broken into clear, atomic commits (see §4).
-- Every feature needs its own branch (see §2).
-- Every commit needs tests/lint/typecheck passing first (see §5).
-- Every feature needs backend unit tests, frontend (Vitest) unit tests, and
-  Playwright E2E coverage before it's considered done.
-
-**Environment notes**
-- Windows host, PowerShell 5.1 shell — no `&&`/`||`; chain with
-  `cmd1; if ($?) { cmd2 }`. Use `New-Item -ItemType Directory` and
-  `Remove-Item -Recurse -Force` instead of Unix equivalents.
-- No local Java/Maven — backend must be built/tested inside Docker.
-- Docker daemon may not be running in a given session — verify before
-  assuming `docker compose` commands will succeed.
-- Register PrimeVue via `app.use(PrimeVue)` with the Aura theme in
-  `main.js` — do not add a `vite-plugin-primevue` dependency, it does not
-  exist.
-
-## 2. Branching — Conventional Branch 1.1.0
-
-This repo follows [Conventional Branch 1.1.0](https://conventionalbranch.org/).
-Every branch name MUST be either a trunk branch or a prefixed branch matching
-`<type>/<description>`.
-
-- Every new feature (a user story, ticket, or otherwise scoped unit of
-  work) gets its own branch off `master` (the repo's default branch — the
-  trunk branch for this repo, alongside `main`/`develop` per the spec)
-  before any code is written.
-
-**Format:** `<type>/<description>`
-
-**Allowed `type` prefixes**
-
-| Type | Use for | Example |
-|---|---|---|
-| `feature` / `feat` | new feature | `feature/add-login-page` |
-| `bugfix` / `fix` | bug fix | `fix/header-bug` |
-| `hotfix` | urgent production fix | `hotfix/security-patch` |
-| `release` | release preparation | `release/v1.2.0` |
-| `chore` | non-code tasks (deps, docs, infra) | `chore/update-dependencies` |
-| `ai` | any AI agent (generic) | `ai/refactor-auth-flow` |
-| `claude` | Claude Code (Anthropic) | `claude/security-patch` |
-| `codex` | OpenAI Codex | `codex/optimize-query` |
-| `copilot` | GitHub Copilot | `copilot/add-login-page` |
-| `cursor` | Cursor | `cursor/fix-header-bug` |
-| `opencode` | OpenCode (Muse Spark) | `opencode/add-call-table` |
-
-Trunk branches (`main`, `master`, `develop`) do not use a prefix. Custom types
-beyond this list are allowed but MUST be documented here before use.
-
-**Branch naming rules** (per spec):
-
-1. Use only lowercase alphanumerics (`a-z`, `0-9`), hyphens (`-`), and dots (`.`
-   for version numbers in `release/` branches, e.g. `release/v1.2.0`).
-2. No consecutive, leading, or trailing hyphens or dots — e.g. `feature/new--login`,
-   `feature/-new-login`, `feature/new-login-`, `release/v1.-2.0` are all invalid.
-3. No spaces or underscores — `fix/header bug` and `fix/header_bug` are invalid.
-4. Keep it clear and concise — descriptive yet short.
-5. Include the ticket/issue code when one exists, placed right after the type
-   prefix — format: `<type>/<ticket-code>-<description>`.
-   - Lowercase the ticket ID — `feature/tht-mon-us-001-call-table` is valid;
-     `feature/THT-MON-US-001-call-table` is invalid.
-   - Keep the description short, hyphen-separated.
-   - Examples:
-     `feature/US-01-call-monitoring`,
-     `feature/issue-123-new-login`,
-     `feature/tht-mon-us-001-call-table`,
-     `fix/JIRA-456-null-pointer-on-login`.
-
-Formal ABNF (spec): `branch-name = trunk-branch / prefixed-branch` where
-`prefixed-branch = type "/" description`, `description = desc-segment *("-" desc-segment)`,
-`desc-segment = 1*(ALPHA / DIGIT) *("." 1*(ALPHA / DIGIT))`.
-
-**Repo workflow rules**
-
-- Do not commit feature work directly to `master`. Merge (or open a PR
-  against) `master` only once the feature's definition of done (§6) is met.
-- One feature branch may span multiple agents (backend + frontend +
-  devops) when the feature touches all three layers — coordinate on the
-  same branch rather than each agent branching independently.
-- **Always push and open PRs through the `no-mistakes` gate** — never
-  `git push origin <branch>`. Push with `git push no-mistakes <branch>`
-  (or run `no-mistakes`/`no-mistakes -y` for the TUI). The gate runs the
-  validation pipeline in a disposable worktree and only forwards the branch
-  to `origin` and opens the PR once every check passes. This is the
-  mandatory path to any PR for this repo. The gate can be configured to
-  validate branch names against this spec (via `commit-check`).
-
-## 3. Sub-agents
-
-Work is split into three implementer agents, each with its own file under
-`agents/`. Dispatch to the agent whose surface owns the change; cross-cutting
-changes (e.g. an API contract change) should touch backend first, then
-frontend, in separate commits.
-
-| Agent | File | Owns |
-|---|---|---|
-| Backend Implementer | `agents/backend-implementer.md` | `backend/**` — entities, repositories, specifications, controllers, security/JWT, seed data, unit tests |
-| Frontend Implementer | `agents/frontend-implementer.md` | `frontend/**` — views, components, stores, composables, schemas, Vitest/Playwright tests |
-| DevOps Implementer | `agents/devops-implementer.md` | `compose.yml`, `**/Dockerfile`, `.env`, `nginx.conf`, README, CI concerns |
-
-Each agent file assumes this AGENTS.md has already been read and does not
-repeat the project rules above — only its own scope and general
-responsibilities.
-
-## 3.1 Feature planning flow (grilling → spec → implementation)
-
-Every feature/ticket follows the same planning-to-implementation flow so that
-decisions are captured once and reused by all implementers:
-
-1. **Grill the feature** — run a `/grilling` session (grill-with-docs /
-   grill-me) against the ticket before writing code. Resolve scope questions
-   (auth in/out, API shape, data semantics, schema, UI language, seed data,
-   testing seams) and record every decision as an ADR plus a glossary.
-2. **Write the spec** — run `/to-spec` to synthesize the conversation into a
-   spec (problem statement, solution, user stories, implementation decisions,
-   testing decisions, out of scope, further notes).
-3. **Store both in `.agentic/doc/<ticket-code>/`** — for every ticket, create a
-   folder under `.agentic/doc/` named by the ticket code and save two files
-   there:
-   - `grilling-plan.md` — the interview decisions, ADRs, glossary, and the
-     ordered implementation plan (rather than asking implementers to re-derive
-     them).
-   - `to-spec.md` — the synthesized spec.
-   - Ticket code matches the story ID (e.g. `.agentic/doc/THT-MON-US-001/`).
-4. **Implement against the docs** — run `/implement` to drive the work. It
-   reads `grilling-plan.md` and `to-spec.md` and dispatches to the backend,
-   frontend, and devops implementers, following the ADRs, glossary (use the
-   domain vocabulary), and ordered commit plan they contain.
-
-Rules:
-- Do not skip the grilling/spec step for a new ticket; the docs are the
-  source of truth for implementation decisions, not a live conversation.
-- Keep `.agentic/doc/<ticket-code>/` scoped to that ticket — one folder per
-  ticket, no cross-ticket docs.
-- Respect ADRs in the area you're touching; add a new ADR when a decision
-  of lasting significance is made rather than overwriting an existing one.
-
-## 4. Git commit convention — Conventional Commits v1.0.0
-
-Every commit, from every agent, MUST follow
-[Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/):
-
-```
-<type>[optional scope][optional !]: <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-**Types**
-| Type | Use for |
+| Section | File |
 |---|---|
-| `feat` | a new feature visible to the user or API consumer |
-| `fix` | a bug fix |
-| `docs` | documentation only (README, comments-as-docs) |
-| `style` | formatting, whitespace, lint fixes — no logic change |
-| `refactor` | code change that neither fixes a bug nor adds a feature |
-| `perf` | a change that improves performance |
-| `test` | adding or correcting tests |
-| `build` | build system or dependency changes (Maven, npm, Dockerfile) |
-| `ci` | CI/CD pipeline configuration |
-| `chore` | maintenance that doesn't fit the above (e.g. .gitignore) |
-| `revert` | reverting a previous commit |
+| Project summary | `.agentic/docs/rules/project-summary.md` |
+| CodeGraph — finding context | `.agentic/docs/rules/codegraph.md` |
+| Hard rules for every agent | `.agentic/docs/rules/hard-rules.md` |
+| Environment notes | `.agentic/docs/rules/env-notes.md` |
+| Branching — Conventional Branch 1.1.0 | `.agentic/docs/rules/branching.md` |
+| Sub-agents | `.agentic/docs/rules/sub-agents.md` |
+| Feature planning flow (grilling → spec → implementation) | `.agentic/docs/rules/planning-flow.md` |
+| Git commit convention — Conventional Commits v1.0.0 | `.agentic/docs/rules/commits.md` |
+| Pre-commit checks | `.agentic/docs/rules/precommit-checks.md` |
+| Definition of done (per feature) | `.agentic/docs/rules/definition-of-done.md` |
+| Pull request / merge request template | `.agentic/docs/rules/pull_request_template.md` |
+| Design system — PrimeVue Aura | `.agentic/docs/rules/design-system.md` |
 
-**Scopes** (recommended, keep them consistent with the agent that owns the area):
-- `backend`, `frontend`, `infra` (compose/docker/nginx), `docs`, `security`, `db`
+## Implementers
 
-**Rules**
-- Description: imperative mood, lowercase, no trailing period —
-  e.g. `feat(backend): add server-side filtering to /api/calls`.
-- Breaking changes: append `!` after the type/scope AND/OR add a
-  `BREAKING CHANGE: <explanation>` footer.
-  e.g. `feat(backend)!: require JWT on all /api/calls routes`.
-- Reference the ticket/user story in the footer when one exists:
-  `Refs: <TICKET-ID>`.
-- One logical change per commit — do not mix backend and frontend changes,
-  or feature code and formatting, in the same commit.
-- `fix` and `feat` commits are what drive semantic versioning, so never use
-  them for non-functional changes.
+| Agent | File |
+|---|---|
+| Backend Implementer | `.agentic/agents/backend-implementer.md` |
+| Frontend Implementer | `.agentic/agents/frontend-implementer.md` |
+| DevOps Implementer | `.agentic/agents/devops-implementer.md` |
+| QA Implementer | `.agentic/agents/qa-implementer.md` |
 
-**Examples**
-```
-feat(db): add new entity and JPA repository
-feat(backend): implement specification-based search/filter/sort
-feat(backend): add paginated, JWT-protected list endpoint
-feat(security): add JWT auth with register/login endpoints
-feat(backend): seed sample data via CommandLineRunner
-test(backend): add unit tests for the new specification
-feat(frontend): scaffold list view with PrimeVue DataTable
-feat(frontend): add data-fetching composable via TanStack Vue Query
-feat(frontend): add auth store with Pinia and router guard
-fix(frontend): register PrimeVue via app.use instead of removed plugin
-test(frontend): add Vitest coverage for list view filters
-test(e2e): add Playwright flow for the completed feature
-build(infra): add multi-stage Dockerfiles for backend and frontend
-ci(infra): wire postgres healthcheck into compose.yml
-docs: add AI Usage section to README
-```
+## Skills
 
-## 5. Pre-commit checks
+Project-specific skills live in `.agents/skills/` (and `.claude/skills/` — kept in sync). If a skill (e.g. `/grilling`, `/implement`, `/tdd`, `/to-spec`, `/code-review`) is not found in the default location (`~/.opencode/skills/` or `~/.config/opencode/skills/`), check `.agents/skills/` and read its `SKILL.md`.
 
-Before **every** commit, in every agent, run and pass:
-1. **Tests** — the relevant unit test suite for whatever was changed
-   (`mvn test` for backend, `npm run test` / Vitest for frontend).
-2. **Lint** — `npm run lint` (ESLint) for any frontend change.
-3. **Typecheck** — `npm run typecheck` (or `vue-tsc --noEmit`) for any
-   frontend change involving TypeScript/Zod schemas/typed composables.
+| Skill | File |
+|---|---|
+| Grill with Docs | `.agents/skills/grill-with-docs/SKILL.md` |
+| Implement | `.agents/skills/implement/SKILL.md` |
+| To-Spec | `.agents/skills/to-spec/SKILL.md` |
+| To-Tickets | `.agents/skills/to-tickets/SKILL.md` |
+| TDD | `.agents/skills/tdd/SKILL.md` |
+| Code Review | `.agents/skills/code-review/SKILL.md` |
+| Improve Codebase Architecture | `.agents/skills/improve-codebase-architecture/SKILL.md` |
+| Resolve Merge Conflicts | `.agents/skills/resolving-merge-conflicts/SKILL.md` |
 
-Rules:
-- If any of the three fail, fix the failure and re-run before committing —
-  do not commit broken tests, lint errors, or type errors with the
-  intention of "fixing it in a follow-up commit."
-- If a fix isn't immediately obvious, keep iterating on the same
-  uncommitted change rather than committing a known-broken state.
-- These checks are per-commit and scoped to what changed — they are
-  separate from, and lighter-weight than, E2E testing (see below).
-- **Playwright E2E tests only run once a full feature is implemented** —
-  i.e. after the last commit of a feature branch, not after every
-  intermediate commit. Do not gate individual commits on E2E passing.
+Read order for implementers: `.agentic/docs/rules/project-summary.md` → `AGENTS.md` → the workflow file needed for the task.
 
-## 6. Definition of done (per feature)
+## Domain modeling lens
 
-Before a feature branch is considered complete:
-1. Code compiles/builds (backend via Docker, frontend via `npm run build`).
-2. Unit tests, lint, and typecheck all pass on every commit (§5).
-3. Playwright E2E coverage of the full feature passes (run once, after the
-   feature is complete — see §5).
-4. Commits follow §4 and are already split logically — no squash-and-fix-later.
-5. README reflects any new setup/run steps.
-6. No hardcoded data leaked into the frontend.
-7. The feature branch was pushed through the `no-mistakes` gate
-   (`git push no-mistakes <branch>`) and its PR was opened once the gate
-   reported all checks green — never pushed straight to `origin` (§2).
+This repo applies the **codebase-design** vocabulary (deep modules, seams, adapters) when shaping new code.
+A module is deep when a small interface hides a lot of behaviour — e.g. `CallRecordSpecification` (one method, all predicate
+composition hidden) or `useCallRecords` (five return values, all query-key and pagination logic hidden).
+Place seams where behaviour actually varies (repository boundary, API client, query layer) and verify that
+deleting the module would scatter complexity across callers. See `C:\Users\Aldo\.opencode\skills\codebase-design`.

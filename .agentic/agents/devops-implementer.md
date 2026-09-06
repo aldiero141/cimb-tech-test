@@ -6,7 +6,7 @@ tools: read, edit, bash
 
 # DevOps Implementer
 
-Read `/AGENTS.md` first for project rules, branching, pre-commit checks,
+Read `.agentic/docs/rules/project-summary.md` first, then `AGENTS.md`, for project rules, branching, pre-commit checks,
 and the commit convention — this file only covers infra-specific scope
 and responsibilities.
 
@@ -26,14 +26,11 @@ and responsibilities.
   (`supervisor` / `supervisor123` / `callmonitoring`), `SERVER_PORT`,
   `VITE_API_BASE_URL`.
 - `backend/Dockerfile`: multi-stage, `maven:3.9-eclipse-temurin-21` build →
-  `eclipse-temurin:21-jre` run, build context `./backend`.
+  `eclipse-temurin:21-jre` run, build context `./backend`. Build stage runs `mvn test`.
 - `frontend/Dockerfile`: `node:22-alpine` build (`npm install && npm run
   build`) → `nginx:alpine` serving `dist`, build context `./frontend`.
 - `frontend/nginx.conf`: serves `dist`, proxies `/api` → `backend:8080`.
-- `.gitignore` excludes `compose.yml`... **note:** despite this, `compose.yml`
-  is currently tracked in the repo — confirm intent before changing either
-  the ignore rule or removing the tracked file; don't silently "fix" this
-  without flagging it.
+- `.gitignore` excludes `node_modules`, `dist`, `.env` (but `compose.yml` is tracked — confirm intent before changing).
 
 ## Responsibilities
 
@@ -63,7 +60,7 @@ For any new feature or infra change assigned to this agent:
    - Keep setup/run instructions current: prerequisites (Docker),
      `docker compose up --build`, where to reach the frontend and backend,
      default seeded login credentials (if any), how to run backend tests
-     (`mvn test` in Docker) and frontend tests/lint/typecheck/E2E.
+     (`docker compose run --rm backend mvn test`) and frontend tests/lint/typecheck/E2E.
    - Maintain the required **"AI Usage"** section describing which parts
      of the implementation used AI assistance and how.
 
@@ -73,13 +70,13 @@ For any new feature or infra change assigned to this agent:
      --build` has NOT been verified locally, rather than implying it has.
 
 ## Workflow
-- Start each feature/infra change on its own branch per `/AGENTS.md` §2
+- Start each feature/infra change on its own branch per `.agentic/docs/rules/branching.md`
   (`feature/...` or `chore/...` as appropriate).
 - Before every commit, run whatever checks apply to the change (e.g. a
   `docker compose config` sanity check, or the frontend/backend test
   suites if the change affects how they run) and fix issues before
-  committing — see `/AGENTS.md` §5.
-- E2E verification of a full feature (once implemented) is the frontend
+  committing — see `.agentic/docs/rules/precommit-checks.md`.
+- E2E verification of a full feature (once implemented) is the QA
   agent's responsibility, but this agent should ensure the Dockerized
   stack it runs against is healthy.
 - Use commit scope `infra` for compose/Dockerfile/nginx changes, `docs`
@@ -92,3 +89,9 @@ For any new feature or infra change assigned to this agent:
 - README accurately reflects current run/test instructions, including the
   AI Usage section.
 - No real secrets committed; `.env` still holds only dev placeholder values.
+
+## Domain modeling notes
+
+- **Deep module: `compose.yml` as deployment seam.** Small interface (three services, two ports, one volume) behind which
+  healthcheck ordering, build contexts, and proxy wiring live. Two adapters at this seam: Docker Compose (prod-like) and
+  local `npm run dev` / `mvn spring-boot:run` (dev iteration) — both satisfy the same app contract.

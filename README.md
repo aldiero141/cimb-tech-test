@@ -87,6 +87,7 @@ Vite dev server on `http://localhost:5173`. The `/api` proxy forwards to
 | Method | Path | Description |
 |---|---|---|
 | `POST` | `/api/auth/login` | Exchange username/password for a JWT |
+| `POST` | `/api/auth/logout` | Audit logout (requires `Authorization: Bearer <token>`) |
 | `GET` | `/api/calls` | Paginated, filtered, sorted call records (requires `Authorization: Bearer <token>`) |
 
 `GET /api/calls` query parameters:
@@ -97,6 +98,43 @@ Vite dev server on `http://localhost:5173`. The `/api` proxy forwards to
 - `sort` — `callId`, `callTimestamp`, `csName`, `customerName`, `sentimentScore` (default `callTimestamp`)
 - `order` — `asc` / `desc` (default `desc`)
 - `page` (0-based, default 0), `size` (default 5)
+
+## Rate limiting (fixed window)
+
+Per-endpoint, IP-based fixed-window limiter. Implemented as a deep module
+`FixedWindowRateLimiter` (`ConcurrentHashMap` + `Clock` + scheduled purge) behind
+a `OncePerRequestFilter` before `JwtAuthFilter`.
+
+Default rules in `backend/src/main/resources/application.yml:23`:
+
+```yaml
+app:
+  rate-limit:
+    enabled: true
+    trust-xff: true   # honor X-Forwarded-For from frontend/nginx
+    rules:
+      - path: /api/auth/login
+        limit: 5
+        window-seconds: 60
+      - path: /api/calls
+        limit: 60
+        window-seconds: 60
+```
+
+- Key: `clientIp + "|" + rule.path`; `X-Forwarded-For` first value if `trust-xff`, else `remoteAddr`.
+- Window: `windowStart = floor(now / W) * W`, count resets on expiry. Boundary burst `5@00:59 + 5@01:01 = 10/2s` is documented (same interface allows a future sliding-window swap).
+- On deny: `429 Too Many Requests` + `Retry-After: <seconds>` header + JSON `{status, error, message, retryAfter}`.
+- Frontend: Axios 429 branch shows a PrimeVue Toast `Too many requests. Try again in Xs.` — no auto-retry, no sign-out.
+- `/actuator/health` and `/actuator/info` are exempt.
+
+Verify with curl (requires stack running):
+
+```bash
+for i in $(seq 1 6); do curl -i -H "X-Forwarded-For: 1.2.3.4" -H "Content-Type: application/json" -d '{"username":"admin","password":"admin123"}' http://localhost:8080/api/auth/login; echo; done
+# 6th response is 429 with Retry-After
+```
+
+Module tests use `Clock.fixed` for deterministic boundaries; `RateLimitFilterTest` covers 429 header+body, IP isolation, endpoint isolation, and XFF handling (`backend/src/test/java/com/cimb/callmonitoring/ratelimit/`).
 
 ## Testing
 
@@ -193,6 +231,18 @@ Spec: `.agentic/docs/tickets/THT-MON-US-001/`
   Playwright E2E covering the full sign-out flow and 401 redirect.
 
 Spec: `.agentic/docs/tickets/THT-MON-US-002/`
+
+#### US-03 — Fixed-Window Rate Limiter (`feature/tht-mon-us-003-rate-limiter`)
+
+Deep module `FixedWindowRateLimiter` (`ratelimit/` package) with `Clock` injection,
+`ConcurrentHashMap` + `@Scheduled` purge, `IpKeyResolver` (XFF), and
+`RateLimitFilter` (before `JwtAuthFilter`, Ant matching, 429 + `Retry-After` + JSON).
+Config-driven via `app.rate-limit.rules` (`/api/auth/login` 5/60s, `/api/calls`
+60/60s). Frontend 429 → PrimeVue Toast (no auto-retry). Tests:
+`FixedWindowRateLimiterTest` (boundary, retryAfter, isolation, purge),
+`RateLimitFilterTest` (MockMvc/XFF/header), `services/__tests__/api.test.js` (429 toast).
+
+Spec: `.agentic/docs/tickets/THT-MON-US-003/`
 
 #### Bug fixes
 

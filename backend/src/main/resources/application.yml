@@ -20,6 +20,16 @@ app:
   jwt:
     secret: ${JWT_SECRET:cimb-call-monitoring-dev-secret-key-please-change-me-0123456789}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  rate-limit:
+    enabled: true
+    trust-xff: true
+    rules:
+      - path: /api/auth/login
+        limit: 5
+        window-seconds: 60
+      - path: /api/calls
+        limit: 60
+        window-seconds: 60
 
 management:
   endpoints:
